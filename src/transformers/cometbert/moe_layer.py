@@ -6,7 +6,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from .gates import COMET, COMETPermLocalSearch
-from .permutations import NoPermutations, LearnPermutations, PermLocalSearch
+from .permutations import NoPermutations, PermLocalSearch
 
 
 class MoELayer(nn.Module):

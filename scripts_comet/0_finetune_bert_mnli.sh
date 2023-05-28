@@ -8,8 +8,8 @@ export saving_dir=$output_dir/"bert_mnli_finetuning"
 export num_gpus=DEFINE_NUM_GPUS_HERE
 
 
-python -m torch.distributed.launch --nproc_per_node=$num_gpus 
-    examples/text-classification/run_glue.py \
+#python -m torch.distributed.launch --nproc_per_node=$num_gpus \
+python examples/text-classification/run_glue.py \
     --model_name_or_path bert-base-uncased \
     --task_name mnli \
     --per_device_train_batch_size 16 \

@@ -8,8 +8,6 @@ import math
 
 EPSILON = 1e-6
 
-# torch.autograd.set_detect_anomaly(True)
-
 from .utils import SparsityMetrics, SmoothStep
 
 
