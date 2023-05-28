@@ -21,7 +21,7 @@ def merge(args):
         "importance": importance_sorted.tolist(),
         "idx": importance_idx.tolist()
     }
-    with open(f"results/{args.task}/experiment_{args.task}_template/importance_{args.task}.pkl", "wb") as file:
+    with open(f"{args.save_dir}/importance_{args.task}.pkl", "wb") as file:
         pickle.dump(result, file)
     print("Done dumping...")
 
@@ -37,6 +37,8 @@ def main():
                         help="Number of files to merge.")
     parser.add_argument("--task", type=str,
                         help="Name of task.")
+    parser.add_argument("--save_dir", type=str,
+                        help="Directory to save results.")
     args = parser.parse_args()
 
     merge(args)
