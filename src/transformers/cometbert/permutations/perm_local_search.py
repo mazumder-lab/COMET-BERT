@@ -69,7 +69,7 @@ class PermLocalSearch(nn.Module):
             log_alpha = log_alpha - torch.unsqueeze(torch.logsumexp(log_alpha, dim=1), dim=1)
         return torch.exp(log_alpha)
 
-    def _gumbel_sinkhorn(self, log_alpha, temp=1.0, n_samples=1, noise_factor=1.0, n_iters=20, squeeze=True):
+    def _gumbel_sinkhorn(self, log_alpha, temp=1.0, n_samples=1, noise_factor=0.0, n_iters=20, squeeze=True):
         n = log_alpha.shape[1]
         batch_size = log_alpha.shape[0]
         log_alpha = torch.reshape(log_alpha, (batch_size, n, n))
@@ -107,7 +107,7 @@ class PermLocalSearch(nn.Module):
 
         return regularization
 
-    def _get_permutation_during_training(self, permutation_log_weights, noise_factor=0.01):
+    def _get_permutation_during_training(self, permutation_log_weights, noise_factor=0.0):
         log_tau = (
             np.log10(self.tau_initial)
             + (np.log10(self.tau_final) - np.log10(self.tau_initial)) * self.iterations / self.iterations_for_learning_permutation

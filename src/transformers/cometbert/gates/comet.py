@@ -57,10 +57,6 @@ class COMET(nn.Module):
 
         self.entropy_reg = config["entropy_reg"]
 
-        self.balanced_splitting = config.get("balanced_splitting", False)
-        self.balanced_splitting_penalty = config.get("balanced_splitting_penalty", 0.0)
-        self.exp_decay_mov_ave = config.get("exp_decay_mov_ave", 0.0)
-
         self.sparsity_metrics = SparsityMetrics()
 
         if not self.leaf:
@@ -69,9 +65,6 @@ class COMET(nn.Module):
 
             self.left_child = COMET(config, node_index=2 * node_index + 1, depth_index=depth_index + 1, name="Node-Left")
             self.right_child = COMET(config, node_index=2 * node_index + 2, depth_index=depth_index + 1, name="Node-Right")
-            if self.balanced_splitting:
-                self.alpha_ave_past_tensor = torch.tensor(0.0, dtype=torch.float32)
-                self.alpha_ave_past = nn.Parameter(self.alpha_ave_past_tensor, requires_grad=False)
 
         else:
             self.output_layer = nn.Linear(self.input_dim, self.k)
@@ -87,22 +80,7 @@ class COMET(nn.Module):
     def _w_initializer(self, x):
         return nn.init.uniform_(x, a=-0.05, b=0.05)
 
-    def _compute_balanced_split_loss(self, prob, current_prob):
-        exp_decay_mov_ave = self.exp_decay_mov_ave * (1.0**self.depth_index)
-
-        penalty = self.balanced_splitting_penalty / (1.0**self.depth_index)
-
-        alpha_ave_current = torch.sum(prob * current_prob, dim=0) / (torch.sum(prob * torch.ones_like(current_prob), dim=0) + EPSILON)
-        alpha_ave = (1 - exp_decay_mov_ave) * alpha_ave_current.float() + exp_decay_mov_ave * self.alpha_ave_past.float()
-
-        self.alpha_ave_past = nn.Parameter(alpha_ave, requires_grad=False)
-
-        loss = -penalty * (0.5 * torch.log(alpha_ave + EPSILON) + 0.5 * torch.nn.math.log(1 - alpha_ave + EPSILON))
-        loss = torch.mean(loss, dim=-1)
-        loss = torch.sum(loss)
-        return loss
-
-    def _compute_entropy_rdegularization_per_expert(self, prob, entropy_reg):
+    def _compute_entropy_regularization_per_expert(self, prob, entropy_reg):
         prob = torch.clamp(prob, min=EPSILON)
 
         regularization = entropy_reg * torch.mean(torch.sum(-(prob + EPSILON) * torch.log(prob + EPSILON), dim=1))
@@ -189,7 +167,7 @@ class COMET(nn.Module):
             s_bj = a_bij + log_prob  # (b, k, 1)
 
             if training:
-                regularization_loss = self._compute_entropy_rdegularization_per_expert(prob, entropy_reg=self.entropy_reg)
+                regularization_loss = self._compute_entropy_regularization_per_expert(prob, entropy_reg=self.entropy_reg)
             else:
                 regularization_loss = 0.0
 

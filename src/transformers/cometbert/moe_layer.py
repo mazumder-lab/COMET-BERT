@@ -142,25 +142,6 @@ class MoELayer(nn.Module):
 
         return x, regularization_loss + reg.to(regularization_loss.device), s_concat
 
-
-    def _forward_comet_gate_sentence(self, x, attention_mask):
-        x_masked = x * attention_mask.unsqueeze(-1)
-        x_average = x_masked.sum(1) / attention_mask.unsqueeze(-1).sum(1)
-
-        bsz, seq_len, dim = x.size()  # bsz = 1, seq_len = 512, dim = 768
-
-        def forward_expert(input_x, expert_idx):
-            input_x = self.experts[expert_idx].forward(input_x)
-            return input_x
-
-        h = [forward_expert(x_average, i) for i in range(self.num_experts)]
-
-        y_agg, soft_averages, hard_averages, s_concat, regularization_loss = self.gate.forward((h, x_average))
-
-        x = y_agg.view(bsz, seq_len, dim)
-
-        return x, regularization_loss, s_concat
-
     def _forward_gate_sentence(self, x, attention_mask):
         x_masked = x * attention_mask.unsqueeze(-1)
         x_average = x_masked.sum(1) / attention_mask.unsqueeze(-1).sum(1)

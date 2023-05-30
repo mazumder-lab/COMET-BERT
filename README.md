@@ -32,8 +32,6 @@ This code base is intended to be used on 3 different stages:
 * For question answering tasks, see `examples/question-answering/run_qa.py`.
 * An example for that is provided in `scripts_comet/0_finetune_bert_mnli.sh`
 
-It is also possible to use the fine-tuned BERT model provided by the Transformers package, and the HuggingFace API, and skip that first stage
-
 ### Importance Score Computation
 * Use `scripts_comet/1_importance.sh` to compute the importance scores, 
   This script adds a `--preprocess_importance` argument, removes the `--do_train` argument (important).
